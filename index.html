@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Workout Planner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #070a10;
+      --card: #0f172a;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.2);
+      --text: #e5e7eb;
+      --text-muted: #9ca3af;
+      --danger: #f97373;
+      --radius-lg: 18px;
+      --radius-sm: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: radial-gradient(circle at top, #111827 0, #020617 45%, #000 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1200px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.3fr);
+      gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: linear-gradient(145deg, #020617, #020617 40%, #020617);
+      border-radius: var(--radius-lg);
+      padding: 20px 22px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(16px);
+    }
+
+    h1, h2, h3 {
+      margin: 0 0 10px;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .chip {
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      color: var(--text-muted);
+    }
+
+    .pill-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .pill-label span {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.18);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    form {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      background: #020617;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      padding: 8px 10px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      transition: border 0.15s, box-shadow 0.15s, transform 0.05s;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
+      transform: translateY(-1px);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+      max-height: 140px;
+    }
+
+    .radio-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .radio-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 5px 10px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      font-size: 12px;
+      cursor: pointer;
+      user-select: none;
+      background: #020617;
+    }
+
+    .radio-pill input {
+      accent-color: var(--accent);
+    }
+
+    .helper {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    button {
+      margin-top: 6px;
+      border-radius: 999px;
+      border: none;
+      padding: 10px 16px;
+      background: radial-gradient(circle at top left, #38bdf8, #0ea5e9 60%, #0369a1);
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 12px 30px rgba(56, 189, 248, 0.5);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+      box-shadow: 0 16px 40px rgba(56, 189, 248, 0.7);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 20px rgba(56, 189, 248, 0.4);
+    }
+
+    .button-subtext {
+      display: block;
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .output-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .badge {
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      color: var(--text-muted);
+    }
+
+    .summary {
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      background: radial-gradient(circle at left, var(--accent-soft), #020617 55%);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      margin-bottom: 12px;
+      font-size: 13px;
+    }
+
+    .summary strong {
+      color: #e0f2fe;
+    }
+
+    .note {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .week-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 70vh;
+      overflow-y: auto;
+      padding-right: 3px;
+    }
+
+    .day-card {
+      background: #020617;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      padding: 10px 12px;
+    }
+
+    .day-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+
+    .day-title {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+
+    .day-focus {
+      font-size: 11px;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    .exercise-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 13px;
+    }
+
+    .exercise-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 4px 0;
+      border-bottom: 1px dashed rgba(31, 41, 55, 0.9);
+    }
+
+    .exercise-list li:last-child {
+      border-bottom: none;
+    }
+
+    .exercise-name {
+      color: #e5e7eb;
+    }
+
+    .exercise-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .empty-state {
+      font-size: 13px;
+      color: var(--text-muted);
+      padding-top: 8px;
+    }
+
+    .error {
+      color: var(--danger);
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Left: Questionnaire -->
+    <section class="card">
+      <div>
+        <h1>Smart Workout Planner</h1>
+        <div class="pill-label">
+          <span>Beta</span> Generates a plan from your answers in seconds.
+        </div>
+        <div class="chip-row">
+          <div class="chip">Personalized</div>
+          <div class="chip">Goal-based</div>
+          <div class="chip">Beginner → Advanced</div>
+        </div>
+      </div>
+
+      <form id="questionnaire">
+        <div class="field-row">
+          <div class="field">
+            <label for="name">Name (optional)</label>
+            <input type="text" id="name" name="name" placeholder="Alex" />
+          </div>
+          <div class="field">
+            <label for="age">Age</label>
+            <input type="number" id="age" name="age" min="10" max="80" placeholder="16" required />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="experience">Training experience</label>
+            <select id="experience" name="experience" required>
+              <option value="">Select…</option>
+              <option value="beginner">Beginner (0–6 months)</option>
+              <option value="intermediate">Intermediate (6–24 months)</option>
+              <option value="advanced">Advanced (2+ years)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="goal">Main goal</label>
+            <select id="goal" name="goal" required>
+              <option value="">Select…</option>
+              <option value="muscle">Build muscle / size</option>
+              <option value="strength">Get stronger</option>
+              <option value="fatloss">Lose fat / look leaner</option>
+              <option value="performance">Sports / performance</option>
+              <option value="general">General health & fitness</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="days">Days per week you can train</label>
+            <select id="days" name="days" required>
+              <option value="">Select…</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+            </select>
+            <div class="helper">Be honest – we’ll optimize around this.</div>
+          </div>
+
+          <div class="field">
+            <label for="duration">Typical session length</label>
+            <select id="duration" name="duration" required>
+              <option value="">Select…</option>
+              <option value="30">~30 minutes</option>
+              <option value="45">~45 minutes</option>
+              <option value="60">60+ minutes</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Available equipment</label>
+          <div class="radio-row">
+            <label class="radio-pill">
+              <input type="radio" name="equipment" value="bodyweight" required />
+              <span>Bodyweight only</span>
+            </label>
+            <label class="radio-pill">
+              <input type="radio" name="equipment" value="dumbbells" />
+              <span>Dumbbells / home gym</span>
+            </label>
+            <label class="radio-pill">
+              <input type="radio" name="equipment" value="gym" />
+              <span>Full gym</span>
+            </label>
+          </div>
+          <div class="helper">We’ll only use exercises that match this.</div>
+        </div>
+
+        <div class="field">
+          <label for="limitations">Injuries or things to avoid (optional)</label>
+          <textarea id="limitations" name="limitations" placeholder="Example: bad knees, no overhead pressing, wrist issues"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="notes">Preferences (optional)</label>
+          <textarea id="notes" name="notes" placeholder="Example: hate running, like push days, want bigger arms"></textarea>
+        </div>
+
+        <div id="formError" class="error hidden">
+          Please fill in all the required fields.
+        </div>
+
+        <div>
+          <button type="submit">
+            Generate my plan
+            <span aria-hidden="true">⚡</span>
+          </button>
+          <span class="button-subtext">No sign-up. Everything runs in your browser.</span>
+        </div>
+      </form>
+    </section>
+
+    <!-- Right: Output -->
+    <section class="card">
+      <div class="output-header">
+        <div>
+          <h2>Your Weekly Training Plan</h2>
+          <p class="note">
+            You’ll see focus days (Push, Pull, Legs, Full Body, etc.) based on your schedule and goal.
+          </p>
+        </div>
+        <div id="planBadge" class="badge">Waiting for input…</div>
+      </div>
+
+      <div id="planSummary" class="summary hidden"></div>
+
+      <div id="weekContainer" class="week-grid">
+        <div class="empty-state">
+          Fill out the questionnaire on the left and hit
+          <strong>“Generate my plan”</strong> to see your personalized split here.
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const form = document.getElementById("questionnaire");
+    const errorBox = document.getElementById("formError");
+    const weekContainer = document.getElementById("weekContainer");
+    const planSummary = document.getElementById("planSummary");
+    const planBadge = document.getElementById("planBadge");
+
+    // Exercise pools by equipment type
+    const exercisePools = {
+      gym: {
+        upperPush: [
+          "Barbell bench press",
+          "Incline dumbbell press",
+          "Machine chest press",
+          "Seated dumbbell shoulder press",
+          "Machine shoulder press",
+          "Cable flyes",
+          "Push-ups",
+          "Dips (assisted if needed)"
+        ],
+        upperPull: [
+          "Lat pulldown",
+          "Pull-ups or assisted pull-ups",
+          "Seated cable row",
+          "Chest-supported row",
+          "Single-arm dumbbell row",
+          "Face pulls",
+          "Cable rear delt fly"
+        ],
+        legs: [
+          "Barbell back squat",
+          "Leg press",
+          "Romanian deadlift",
+          "Lying leg curl",
+          "Leg extension",
+          "Bulgarian split squat",
+          "Walking lunges",
+          "Hip thrusts or glute bridge"
+        ],
+        core: [
+          "Hanging knee raise",
+          "Cable crunch",
+          "Plank",
+          "Side plank",
+          "Ab wheel rollout",
+          "Roman chair sit-ups"
+        ],
+        conditioning: [
+          "Treadmill incline walk",
+          "Rowing machine",
+          "Bike intervals",
+          "Stair climber"
+        ]
+      },
+      dumbbells: {
+        upperPush: [
+          "Flat dumbbell press",
+          "Incline dumbbell press",
+          "Dumbbell shoulder press",
+          "Dumbbell floor press",
+          "Dumbbell flyes",
+          "Push-ups"
+        ],
+        upperPull: [
+          "One-arm dumbbell row",
+          "Bent-over dumbbell row",
+          "Dumbbell pullover",
+          "Reverse flyes",
+          "Dumbbell shrug"
+        ],
+        legs: [
+          "Goblet squat",
+          "Dumbbell Romanian deadlift",
+          "Dumbbell lunge",
+          "Bulgarian split squat",
+          "Dumbbell step-up",
+          "Dumbbell hip thrust"
+        ],
+        core: [
+          "Weighted crunch",
+          "Dumbbell Russian twist",
+          "Plank",
+          "Side plank",
+          "Dead bug"
+        ],
+        conditioning: [
+          "Jump rope",
+          "Farmer’s carry",
+          "Bodyweight squat jumps"
+        ]
+      },
+      bodyweight: {
+        upperPush: [
+          "Push-ups",
+          "Incline push-ups",
+          "Decline push-ups",
+          "Pike push-ups",
+          "Dips between chairs"
+        ],
+        upperPull: [
+          "Inverted rows under a table/bar",
+          "Band-assisted pull-ups (if band available)",
+          "Doorframe row (careful)",
+          "Towel row around a pole"
+        ],
+        legs: [
+          "Bodyweight squats",
+          "Walking lunges",
+          "Reverse lunges",
+          "Step-ups onto a chair",
+          "Glute bridge",
+          "Single-leg Romanian deadlift (no weight)",
+          "Wall sit"
+        ],
+        core: [
+          "Crunches",
+          "Leg raises lying on floor",
+          "Plank",
+          "Side plank",
+          "Bicycle crunches",
+          "Dead bug"
+        ],
+        conditioning: [
+          "Burpees",
+          "Mountain climbers",
+          "Jumping jacks",
+          "High knees"
+        ]
+      }
+    };
+
+    function pickRandomExercises(pool, count) {
+      const copy = [...pool];
+      const chosen = [];
+      const max = Math.min(count, copy.length);
+      for (let i = 0; i < max; i++) {
+        const index = Math.floor(Math.random() * copy.length);
+        chosen.push(copy[index]);
+        copy.splice(index, 1);
+      }
+      return chosen;
+    }
+
+    function getVolumeDescriptor(experience, goal) {
+      let sets = 3;
+      if (experience === "intermediate") sets = 3;
+      if (experience === "advanced") sets = 4;
+
+      let reps = "8–12";
+      if (goal === "strength") reps = "4–6";
+      if (goal === "fatloss" || goal === "general" || goal === "performance") reps = "8–15";
+
+      return `${sets} × ${reps} reps`;
+    }
+
+    function getTimeBucket(duration) {
+      if (duration === "30") return "short";
+      if (duration === "45") return "medium";
+      return "long";
+    }
+
+    function buildSplit(days, goal) {
+      const d = Number(days);
+      // Very simple logic, can be tuned
+      if (d >= 6) {
+        return ["Push", "Pull", "Legs", "Push", "Pull", "Legs"];
+      }
+      if (d === 5) {
+        return ["Upper", "Lower", "Push", "Pull", "Full Body"];
+      }
+      if (d === 4) {
+        if (goal === "muscle" || goal === "strength") {
+          return ["Upper", "Lower", "Upper", "Lower"];
+        }
+        return ["Full Body", "Upper", "Lower", "Full Body"];
+      }
+      if (d === 3) {
+        if (goal === "muscle" || goal === "strength") {
+          return ["Push", "Pull", "Legs"];
+        }
+        return ["Full Body", "Upper", "Lower"];
+      }
+      if (d === 2) {
+        return ["Full Body", "Full Body"];
+      }
+      return ["Full Body"];
+    }
+
+    function exercisesForDay(focus, pools, timeBucket, experience, goal) {
+      let total;
+      if (timeBucket === "short") total = 5;
+      else if (timeBucket === "medium") total = 7;
+      else total = 8;
+
+      const strength = getVolumeDescriptor(experience, goal);
+      const dayExercises = [];
+
+      function addFrom(category, count) {
+        if (!pools[category]) return;
+        const picked = pickRandomExercises(pools[category], count);
+        picked.forEach((name) => {
+          dayExercises.push({
+            name,
+            strength
+          });
+        });
+      }
+
+      switch (focus) {
+        case "Push":
+          addFrom("upperPush", total - 1);
+          addFrom("core", 1);
+          break;
+        case "Pull":
+          addFrom("upperPull", total - 1);
+          addFrom("core", 1);
+          break;
+        case "Legs":
+          addFrom("legs", total - 1);
+          addFrom("core", 1);
+          break;
+        case "Upper":
+          addFrom("upperPush", Math.ceil((total - 1) / 2));
+          addFrom("upperPull", Math.floor((total - 1) / 2));
+          addFrom("core", 1);
+          break;
+        case "Lower":
+          addFrom("legs", total - 1);
+          addFrom("core", 1);
+          break;
+        case "Full Body":
+        default:
+          addFrom("legs", Math.floor(total / 3));
+          addFrom("upperPush", Math.floor(total / 3));
+          addFrom("upperPull", Math.floor(total / 3));
+          addFrom("core", 1);
+          break;
+      }
+
+      // Trim if we overshoot
+      return dayExercises.slice(0, total);
+    }
+
+    function generatePlan(formValues) {
+      const {
+        name,
+        age,
+        experience,
+        goal,
+        days,
+        duration,
+        equipment,
+        limitations,
+        notes
+      } = formValues;
+
+      const timeBucket = getTimeBucket(duration);
+      const split = buildSplit(days, goal);
+      const pools = exercisePools[equipment];
+
+      const weeklyPlan = split.map((focus, index) => {
+        const exercises = exercisesForDay(
+          focus,
+          pools,
+          timeBucket,
+          experience,
+          goal
+        );
+        return {
+          title: `Day ${index + 1}`,
+          focus,
+          exercises
+        };
+      });
+
+      // Summary text
+      const goalMap = {
+        muscle: "build muscle and size",
+        strength: "get stronger",
+        fatloss: "lose fat and look leaner",
+        performance: "boost sports performance",
+        general: "improve general health and fitness"
+      };
+
+      const expMap = {
+        beginner: "beginner",
+        intermediate: "intermediate",
+        advanced: "advanced"
+      };
+
+      const equipMap = {
+        gym: "a full gym",
+        dumbbells: "dumbbells / simple home equipment",
+        bodyweight: "bodyweight-only training"
+      };
+
+      const summaryText =
+        `<strong>${name || "You"}</strong> are a ${age}-year-old ` +
+        `${expMap[experience]} lifter training <strong>${days}×/week</strong>` +
+        ` for <strong>${goalMap[goal]}</strong> using <strong>${equipMap[equipment]}</strong>.` +
+        (limitations
+          ? ` We’ll keep in mind: <strong>${limitations}</strong>.`
+          : "") +
+        (notes ? ` Preferences noted: <strong>${notes}</strong>.` : "");
+
+      return { weeklyPlan, summaryText, splitName: split.join(" • ") };
+    }
+
+    function renderPlan(planObj) {
+      const { weeklyPlan, summaryText, splitName } = planObj;
+
+      // Update badge
+      planBadge.textContent = `${weeklyPlan.length}-day split: ${splitName}`;
+
+      // Update summary
+      planSummary.innerHTML = summaryText;
+      planSummary.classList.remove("hidden");
+
+      // Clear week container
+      weekContainer.innerHTML = "";
+
+      weeklyPlan.forEach((day) => {
+        const dayCard = document.createElement("div");
+        dayCard.className = "day-card";
+
+        const header = document.createElement("div");
+        header.className = "day-header";
+
+        const title = document.createElement("div");
+        title.className = "day-title";
+        title.textContent = day.title;
+
+        const focus = document.createElement("div");
+        focus.className = "day-focus";
+        focus.textContent = day.focus;
+
+        header.appendChild(title);
+        header.appendChild(focus);
+
+        const list = document.createElement("ul");
+        list.className = "exercise-list";
+
+        day.exercises.forEach((ex) => {
+          const li = document.createElement("li");
+
+          const name = document.createElement("span");
+          name.className = "exercise-name";
+          name.textContent = ex.name;
+
+          const meta = document.createElement("span");
+          meta.className = "exercise-meta";
+          meta.textContent = ex.strength;
+
+          li.appendChild(name);
+          li.appendChild(meta);
+          list.appendChild(li);
+        });
+
+        dayCard.appendChild(header);
+        dayCard.appendChild(list);
+        weekContainer.appendChild(dayCard);
+      });
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      errorBox.classList.add("hidden");
+
+      const formData = new FormData(form);
+
+      const requiredFields = ["age", "experience", "goal", "days", "duration"];
+      for (const field of requiredFields) {
+        if (!formData.get(field)) {
+          errorBox.classList.remove("hidden");
+          return;
+        }
+      }
+
+      const equipment = formData.get("equipment");
+      if (!equipment) {
+        errorBox.textContent = "Please choose your available equipment.";
+        errorBox.classList.remove("hidden");
+        return;
+      } else {
+        errorBox.textContent = "Please fill in all the required fields.";
+      }
+
+      const values = {
+        name: formData.get("name")?.trim(),
+        age: formData.get("age"),
+        experience: formData.get("experience"),
+        goal: formData.get("goal"),
+        days: formData.get("days"),
+        duration: formData.get("duration"),
+        equipment,
+        limitations: formData.get("limitations")?.trim(),
+        notes: formData.get("notes")?.trim()
+      };
+
+      const plan = generatePlan(values);
+      renderPlan(plan);
+    });
+  </script>
+</body>
+</html>
+
